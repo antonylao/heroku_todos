@@ -3,7 +3,7 @@ require "sinatra/reloader" if development?
 require "sinatra/content_for"
 require "tilt/erubis"
 
-configure do 
+configure do
   enable :sessions
   set :session_secret, 'secret'
   set :erb, :escape_html => true
@@ -19,7 +19,7 @@ helpers do
   end
 
   def todos_count(list)
-    list[:todos].size 
+    list[:todos].size
   end
 
   def todos_remaining_count(list)
@@ -30,13 +30,13 @@ helpers do
     complete_lists, incomplete_lists = lists.partition {|list| list_complete?(list)}
 
     incomplete_lists.each(&block)
-    complete_lists.each(&block) 
+    complete_lists.each(&block)
   end
 
   def sort_todos(todos, &block)
     complete_todos, incomplete_todos = todos.partition {|todo| todo[:completed]}
 
-    incomplete_todos.each(&block) 
+    incomplete_todos.each(&block)
     complete_todos.each(&block)
   end
 end
@@ -80,7 +80,7 @@ def next_list_id(lists)
   max + 1
 end
 
-before do 
+before do
   session[:lists] ||= []
 end
 
@@ -95,12 +95,12 @@ get "/lists" do
 end
 
 # Render the new list form
-get "/lists/new" do 
+get "/lists/new" do
   erb :new_list, layout: :layout
 end
 
 # Create a new list
-post "/lists" do 
+post "/lists" do
   list_name = params[:list_name].strip
   error = error_for_list_name(list_name)
   lists = session[:lists]
@@ -132,7 +132,7 @@ end
 
 # Update an existing todo list
 # (if the user use the same name, it will be considered an error)
-post "/lists/:id" do 
+post "/lists/:id" do
   id = params[:id].to_i
   @list = load_list(id)
 
@@ -150,18 +150,18 @@ post "/lists/:id" do
 end
 
 # Delete a todo list
-post "/lists/:id/delete" do 
-  id = params[:id].to_i 
-  list = session[:lists][id]
+post "/lists/:id/delete" do
+  id = params[:id].to_i
+  list = session[:lists].find { |list| list[:id] == id}
 
   session[:lists].reject! { |list| list[:id] == id }
-  
+
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     # session[:success] = "The list #{list[:name]} has been deleted." # 500 response when applied
     "/lists"
   else
     session[:success] = "The list #{list[:name]} has been deleted."
-    redirect "/lists" 
+    redirect "/lists"
   end
 end
 
@@ -172,9 +172,9 @@ post '/lists/:list_id/todos' do
 
   todo_name = params[:todo].strip
   error = error_for_todo_name(todo_name)
-  
+
   if error
-    session[:error] = error   
+    session[:error] = error
     erb :list, layout: :layout
   else
     id = next_todo_id(@list[:todos])
@@ -190,7 +190,8 @@ post "/lists/:list_id/todos/:todo_id/delete" do
   list = load_list(list_id)
   todo_id = params[:todo_id].to_i
 
-  list[:todos].reject! { |todo| todo[:id] == todo_id } 
+  deleted_todo = list[:todos].find { |todo| todo[:id] == todo_id }
+  list[:todos].reject! { |todo| todo[:id] == todo_id }
 
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     status 204 # tells the browser that there is no content
@@ -202,7 +203,7 @@ post "/lists/:list_id/todos/:todo_id/delete" do
 end
 
 # Update the status of a todo
-post "/lists/:list_id/todos/:todo_id" do 
+post "/lists/:list_id/todos/:todo_id" do
   list_id = params[:list_id].to_i
   list = load_list(list_id)
 
@@ -216,7 +217,7 @@ post "/lists/:list_id/todos/:todo_id" do
 end
 
 # Mark all todos as complete for a list
-post "/lists/:id/complete_all" do 
+post "/lists/:id/complete_all" do
   list_id = params[:id].to_i
   list = load_list(list_id)
   list[:todos].each do |todo|
