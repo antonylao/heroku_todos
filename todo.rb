@@ -157,7 +157,7 @@ post "/lists/:id/delete" do
   session[:lists].reject! { |list| list[:id] == id }
 
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
-    # session[:success] = "The list #{list[:name]} has been deleted." # 500 response when applied
+    session[:success] = "The list #{list[:name]} has been deleted." # 500 response when applied
     "/lists"
   else
     session[:success] = "The list #{list[:name]} has been deleted."
