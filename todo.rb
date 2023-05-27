@@ -152,7 +152,7 @@ end
 # Delete a todo list
 post "/lists/:id/delete" do
   id = params[:id].to_i
-  list = session[:lists].find { |list| list[:id] == id}
+  list = load_list(id)
 
   session[:lists].reject! { |list| list[:id] == id }
 
